@@ -21,7 +21,7 @@ test("server-renders the operation-style assessment landing page", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>操作節奏適配掃描｜NAS<\/title>/);
-  assert.match(html, /你不一定缺方法/);
+  assert.match(html, /不是每一種方法/);
   assert.match(html, /開始 6 分鐘掃描/);
   assert.match(html, /不蒐集帳戶資料/);
   assert.match(html, /og:image/);
@@ -36,6 +36,8 @@ test("ships a complete questionnaire, safety gate, and share image", async () =>
 
   assert.match(page, /number:\s*15/);
   assert.match(page, /getLifePath/);
+  assert.match(page, /setActiveQuestion/);
+  assert.match(page, /系統會自動帶你前往下一題/);
   assert.match(page, /score\.safety >= 7/);
   assert.match(page, /先建立規則，再談操作週期/);
   assert.match(page, /不構成個別投資建議/);
