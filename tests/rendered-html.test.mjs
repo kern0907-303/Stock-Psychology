@@ -28,19 +28,23 @@ test("server-renders the operation-style assessment landing page", async () => {
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|SkeletonPreview/);
 });
 
-test("ships a NAS self-awareness questionnaire and optional life-number reflection", async () => {
+test("ships a NAS self-awareness questionnaire with a stock-rhythm conclusion", async () => {
   const [page, layout] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /number:\s*10/);
+  assert.match(page, /number:\s*14/);
   assert.match(page, /getLifePath/);
-  assert.match(page, /setActiveQuestion/);
+  assert.match(page, /setSelfIndex/);
   assert.match(page, /選定後會自動前往下一題/);
   assert.match(page, /怕錯過型/);
+  assert.match(page, /先多充實股票知識，再談交易/);
+  assert.match(page, /目前條件較接近當沖/);
+  assert.match(page, /目前條件較接近波段操作/);
+  assert.match(page, /目前條件較接近長期持有/);
   assert.match(page, /選擇性延伸/);
-  assert.match(page, /不是投資測驗/);
+  assert.match(page, /不是個別投資建議/);
   assert.match(layout, /metadataBase/);
   assert.match(layout, /og-v2\.png/);
 });
