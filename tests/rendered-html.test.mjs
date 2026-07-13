@@ -9,7 +9,9 @@ async function render() {
 
   return worker.fetch(
     new Request("http://localhost/", { headers: { accept: "text/html" } }),
-    { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    {
+      ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+    },
     { waitUntil() {}, passThroughOnException() {} },
   );
 }
@@ -25,7 +27,10 @@ test("server-renders the operation-style assessment landing page", async () => {
   assert.match(html, /開始看看自己/);
   assert.match(html, /不問生日/);
   assert.match(html, /og:image/);
-  assert.doesNotMatch(html, /codex-preview|Your site is taking shape|SkeletonPreview/);
+  assert.doesNotMatch(
+    html,
+    /codex-preview|Your site is taking shape|SkeletonPreview/,
+  );
 });
 
 test("ships a NAS self-awareness questionnaire with a stock-rhythm conclusion", async () => {
@@ -44,6 +49,10 @@ test("ships a NAS self-awareness questionnaire with a stock-rhythm conclusion", 
   assert.match(page, /目前條件較接近波段操作/);
   assert.match(page, /目前條件較接近長期持有/);
   assert.match(page, /選擇性延伸/);
+  assert.match(page, /陽曆與陰曆/);
+  assert.match(page, /getLunarDate/);
+  assert.match(page, /陰曆生命數字/);
+  assert.match(page, /行動與情緒反應/);
   assert.match(page, /不是個別投資建議/);
   assert.match(layout, /metadataBase/);
   assert.match(layout, /og-v2\.png/);
