@@ -10,17 +10,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: siteUrl,
-    title: "操作節奏適配掃描｜NAS",
-    description: "用 15 個情境，理解你在波動、等待與壓力下的操作習慣。",
+    title: "你在不確定裡，怎麼做決定？｜NAS",
+    description: "從股票這個情境，看看你遇到不確定時最常出現的決策慣性。",
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
     openGraph: {
-      title: "操作節奏適配掃描｜NAS",
-      description: "看懂你的操作習慣，不只看行情。",
-      images: [{ url: "/og.png", width: 1792, height: 944, alt: "操作節奏適配掃描" }],
+      title: "你在不確定裡，怎麼做決定？｜NAS",
+      description: "看懂那些在不確定裡，反覆替你做決定的慣性。",
+      images: [{ url: "/og-v2.png", width: 1792, height: 944, alt: "NAS 決策慣性小測驗" }],
       type: "website",
       locale: "zh_TW",
     },
-    twitter: { card: "summary_large_image", title: "操作節奏適配掃描｜NAS", description: "看懂你的操作習慣，不只看行情。", images: ["/og.png"] },
+    twitter: { card: "summary_large_image", title: "你在不確定裡，怎麼做決定？｜NAS", description: "看懂那些在不確定裡，反覆替你做決定的慣性。", images: ["/og-v2.png"] },
   };
 }
 

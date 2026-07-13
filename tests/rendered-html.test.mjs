@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function render() {
@@ -20,28 +20,27 @@ test("server-renders the operation-style assessment landing page", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>操作節奏適配掃描｜NAS<\/title>/);
-  assert.match(html, /不是每一種方法/);
-  assert.match(html, /開始 6 分鐘掃描/);
-  assert.match(html, /不蒐集帳戶資料/);
+  assert.match(html, /<title>你在不確定裡，怎麼做決定？｜NAS<\/title>/);
+  assert.match(html, /我們以為在看市場/);
+  assert.match(html, /開始看看自己/);
+  assert.match(html, /不問生日/);
   assert.match(html, /og:image/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|SkeletonPreview/);
 });
 
-test("ships a complete questionnaire, safety gate, and share image", async () => {
+test("ships a NAS self-awareness questionnaire and optional life-number reflection", async () => {
   const [page, layout] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /number:\s*15/);
+  assert.match(page, /number:\s*10/);
   assert.match(page, /getLifePath/);
   assert.match(page, /setActiveQuestion/);
-  assert.match(page, /系統會自動帶你前往下一題/);
-  assert.match(page, /score\.safety >= 7/);
-  assert.match(page, /先建立規則，再談操作週期/);
-  assert.match(page, /不構成個別投資建議/);
+  assert.match(page, /選定後會自動前往下一題/);
+  assert.match(page, /怕錯過型/);
+  assert.match(page, /選擇性延伸/);
+  assert.match(page, /不是投資測驗/);
   assert.match(layout, /metadataBase/);
-  assert.match(layout, /og\.png/);
-  await access(new URL("../public/og.png", import.meta.url));
+  assert.match(layout, /og-v2\.png/);
 });
