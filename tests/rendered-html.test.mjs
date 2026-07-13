@@ -51,6 +51,8 @@ test("ships a NAS self-awareness questionnaire with a stock-rhythm conclusion", 
   assert.match(page, /選擇性延伸/);
   assert.match(page, /陽曆與陰曆/);
   assert.match(page, /getLunarDate/);
+  assert.match(page, /getLifeNumber/);
+  assert.match(page, /padStart\(2, "0"\)/);
   assert.match(page, /陰曆生命數字/);
   assert.match(page, /行動與情緒反應/);
   assert.match(page, /不是個別投資建議/);

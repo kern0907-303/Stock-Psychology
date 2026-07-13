@@ -307,17 +307,27 @@ const lifeProfiles: Record<number, LifeProfile> = {
     prompt: "先安排界線與資源，再談承擔與長期。",
   },
 };
-function reduceLifePath(digits: number[]) {
+type LifeNumber = { base: number; label: string; steps: number[] };
+function getLifeNumber(digits: number[]): LifeNumber | null {
   if (!digits.length) return null;
-  let sum = digits.reduce((total, digit) => total + digit, 0);
-  while (sum > 9 && sum !== 11 && sum !== 22)
-    sum = String(sum)
+  const total = digits.reduce((sum, digit) => sum + digit, 0);
+  const steps = [total];
+  let current = total;
+  while (current > 9) {
+    current = String(current)
       .split("")
-      .reduce((total, digit) => total + Number(digit), 0);
-  return sum;
+      .reduce((sum, digit) => sum + Number(digit), 0);
+    steps.push(current);
+  }
+  const reducedSteps = steps.length === 1 ? [current] : steps.slice(1);
+  return {
+    base: current,
+    steps,
+    label: [String(total).padStart(2, "0"), ...reducedSteps].join("/"),
+  };
 }
 function getLifePath(value: string) {
-  return reduceLifePath(value.replace(/\D/g, "").split("").map(Number));
+  return getLifeNumber(value.replace(/\D/g, "").split("").map(Number));
 }
 function getLunarDate(value: string) {
   if (!value) return null;
@@ -366,10 +376,10 @@ export default function Home() {
   const question =
     stage === "self" ? selfQuestions[selfIndex] : styleQuestions[styleIndex];
   const position = stage === "self" ? selfIndex + 1 : 11 + styleIndex;
-  const solarLifePath = getLifePath(birthdate);
+  const solarLifeNumber = getLifePath(birthdate);
   const lunarBirth = getLunarDate(birthdate);
-  const lunarLifePath = lunarBirth
-    ? reduceLifePath(
+  const lunarLifeNumber = lunarBirth
+    ? getLifeNumber(
         [lunarBirth.year, lunarBirth.month, lunarBirth.day]
           .join("")
           .split("")
@@ -681,28 +691,32 @@ export default function Home() {
                     onChange={(event) => setBirthdate(event.target.value)}
                   />
                 </label>
-                {solarLifePath && lunarBirth && lunarLifePath && (
+                {solarLifeNumber && lunarBirth && lunarLifeNumber && (
                   <div className="life-note">
                     <div className="life-note-heading">
                       <span>你的雙軸生命數字</span>
                       <p>
-                        陽曆 {birthdate.replaceAll("-", "/")} · {lunarBirth.label}
+                        陽曆 {birthdate.replaceAll("-", "/")} ·{" "}
+                        {lunarBirth.label}
                       </p>
                     </div>
+                    <p className="life-format-note">
+                      顯示方式：原始合計／每一層化簡結果。
+                    </p>
                     <div className="life-axis-grid">
                       <article>
-                        <span>陽曆生命數字 {solarLifePath}</span>
+                        <span>陽曆生命數字 {solarLifeNumber.label}</span>
                         <small>想法與外在表現</small>
-                        <h4>{lifeProfiles[solarLifePath].title}</h4>
-                        <p>{lifeProfiles[solarLifePath].body}</p>
-                        <b>{lifeProfiles[solarLifePath].prompt}</b>
+                        <h4>{lifeProfiles[solarLifeNumber.base].title}</h4>
+                        <p>{lifeProfiles[solarLifeNumber.base].body}</p>
+                        <b>{lifeProfiles[solarLifeNumber.base].prompt}</b>
                       </article>
                       <article>
-                        <span>陰曆生命數字 {lunarLifePath}</span>
+                        <span>陰曆生命數字 {lunarLifeNumber.label}</span>
                         <small>行動與情緒反應</small>
-                        <h4>{lifeProfiles[lunarLifePath].title}</h4>
-                        <p>{lifeProfiles[lunarLifePath].body}</p>
-                        <b>{lifeProfiles[lunarLifePath].prompt}</b>
+                        <h4>{lifeProfiles[lunarLifeNumber.base].title}</h4>
+                        <p>{lifeProfiles[lunarLifeNumber.base].body}</p>
+                        <b>{lifeProfiles[lunarLifeNumber.base].prompt}</b>
                       </article>
                     </div>
                     <div className="life-integration">

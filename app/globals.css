@@ -846,6 +846,11 @@ footer {
   color: #68746f;
   font-size: 12px;
 }
+.life-format-note {
+  margin: 7px 0 0;
+  color: #76817c;
+  font-size: 12px;
+}
 .life-axis-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
