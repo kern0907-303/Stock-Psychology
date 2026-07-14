@@ -17,7 +17,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      # The current lockfile has a Linux-only optional native dependency that
+      # npm ci rejects on GitHub runners. npm install resolves that optional
+      # package before the deterministic build and deploy steps.
+      - run: npm install --no-audit --no-fund
       - run: npm run build
       - run: npx wrangler deploy --config cloudflare/wrangler.jsonc
         env:
