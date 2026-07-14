@@ -540,10 +540,10 @@ export default function Home() {
               其實常在回應<span>自己。</span>
             </h1>
             <p className="hero-copy">
-              這幾個月進出股票，我慢慢發現：讓人急著買、捨不得賣、一直問別人、或硬撐下去的，往往不只是行情。
+              這 6 個月我很專心地研究股市，發現一件有趣的事——一個人的「交易行為」，一開始幾乎都跟著他的初始設定在走。你怎麼面對風險、怎麼做決定、賠錢時撐多久、賺錢時抱不抱得住，其實早就有一套慣性模式。
             </p>
             <p className="hero-copy hero-copy-muted">
-              先看你在不確定裡怎麼決定，再看目前較能承接的股票操作節奏。
+              除非你先看見這套設定、有意識地改寫它，不然再換幾套方法，最後還是回到原本的樣子。<br /><br />目前最常見的三種交易方式：波段、當沖、長期持有——你知道哪一種，才真正適合你的設定嗎？歡迎留言「檢測」，免費幫你看。
             </p>
             <div className="hero-actions">
               <button
@@ -552,7 +552,7 @@ export default function Home() {
               >
                 開始看看自己 <b>→</b>
               </button>
-              <p>約 5 分鐘 · 不問生日 · 不推薦標的</p>
+              <p>測驗時間 5 分鐘</p>
             </div>
             <div className="hero-matrix" aria-hidden="true">
               <span>

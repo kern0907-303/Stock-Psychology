@@ -25,7 +25,9 @@ test("server-renders the operation-style assessment landing page", async () => {
   assert.match(html, /<title>你在不確定裡，怎麼做決定？｜NAS<\/title>/);
   assert.match(html, /我們以為在看市場/);
   assert.match(html, /開始看看自己/);
-  assert.match(html, /不問生日/);
+  assert.match(html, /測驗時間 5 分鐘/);
+  assert.match(html, /這 6 個月我很專心地研究股市/);
+  assert.doesNotMatch(html, /不問生日/);
   assert.match(html, /og:image/);
   assert.doesNotMatch(
     html,
