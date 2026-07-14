@@ -1,6 +1,7 @@
 const patterns = new Set(["chase", "external", "hold", "observe"]);
 const styles = new Set(["learn", "day", "swing", "long"]);
 const consentVersion = "nas-decision-dossier-v1";
+const emailSubject = "你的決策底圖｜一份關於你如何做決定的完整解讀";
 
 type RequestPayload = {
   email?: string;
@@ -47,9 +48,11 @@ export async function POST(request: Request) {
     const id = crypto.randomUUID();
     // Keep the Cloudflare-only D1 binding out of the SSR import graph. The
     // public questionnaire remains server-renderable without opening D1.
-    const [{ getDb }, { decisionDossiers }] = await Promise.all([
+    const [{ getDb }, { decisionDossiers }, { eq }, { env }] = await Promise.all([
       import("../../../db"),
       import("../../../db/schema"),
+      import("drizzle-orm"),
+      import("cloudflare:workers"),
     ]);
     const db = getDb();
     await db.insert(decisionDossiers).values({
@@ -71,7 +74,62 @@ export async function POST(request: Request) {
       createdAt: now,
     });
 
-    return Response.json({ id, status: "pending" }, { status: 201 });
+    const resendApiKey = env.RESEND_API_KEY;
+    const sender = env.RESEND_FROM_EMAIL;
+    if (!resendApiKey || !sender) {
+      await db
+        .update(decisionDossiers)
+        .set({
+          deliveryStatus: "failed",
+          deliveryError: "Email delivery is not configured.",
+        })
+        .where(eq(decisionDossiers.id, id));
+      return Response.json(
+        { error: "報告已建立，但寄送服務尚未準備完成，請稍後再試。" },
+        { status: 503 },
+      );
+    }
+
+    const resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: sender,
+        to: [email],
+        subject: emailSubject,
+        html: reportHtml,
+        text: reportText,
+        ...(env.RESEND_REPLY_TO ? { reply_to: env.RESEND_REPLY_TO } : {}),
+      }),
+    });
+    const resendPayload = (await resendResponse.json().catch(() => null)) as { id?: string; message?: string } | null;
+    if (!resendResponse.ok || !resendPayload?.id) {
+      await db
+        .update(decisionDossiers)
+        .set({
+          deliveryStatus: "failed",
+          deliveryError: (resendPayload?.message ?? `Resend request failed with ${resendResponse.status}`).slice(0, 500),
+        })
+        .where(eq(decisionDossiers.id, id));
+      return Response.json(
+        { error: "報告已建立，但目前無法寄出。請稍後再試。" },
+        { status: 502 },
+      );
+    }
+
+    await db
+      .update(decisionDossiers)
+      .set({
+        deliveryStatus: "sent",
+        resendEmailId: resendPayload.id,
+        deliveredAt: new Date().toISOString(),
+      })
+      .where(eq(decisionDossiers.id, id));
+
+    return Response.json({ id, status: "sent" }, { status: 201 });
   } catch (error) {
     console.error("Unable to create decision dossier request", error);
     return Response.json(

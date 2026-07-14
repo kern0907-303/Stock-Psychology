@@ -817,8 +817,8 @@ export default function Home() {
                     </div>
                     {dossierState === "sent" ? (
                       <div className="dossier-success" role="status">
-                        <b>已建立你的免費報告申請。</b>
-                        <span>NAS 會依你留下的 Email 寄出「你的決策底圖」完整 HTML 解讀。</span>
+                        <b>你的決策底圖已寄出。</b>
+                        <span>請至 {email} 查看完整 HTML 解讀；若一時沒有看見，也請確認垃圾郵件匣。</span>
                       </div>
                     ) : (
                       <form className="dossier-form" onSubmit={requestDossier}>

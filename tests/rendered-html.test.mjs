@@ -75,6 +75,9 @@ test("stores only calculated life-number paths in the dossier schema", async () 
   assert.doesNotMatch(schema, /birthdate/);
   assert.match(route, /reportConsentAt/);
   assert.match(route, /marketingConsent/);
+  assert.match(route, /https:\/\/api\.resend\.com\/emails/);
+  assert.match(route, /deliveryStatus: "sent"/);
   assert.match(dossier, /生命數字是初始設定，不是命定結論/);
   assert.match(dossier, /你的決策底圖/);
+  assert.match(dossier, /一份關於你如何做決定的完整解讀/);
 });
