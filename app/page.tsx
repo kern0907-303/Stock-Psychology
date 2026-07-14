@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { buildDecisionDossier } from "../lib/decision-dossier";
 
 type Pattern = "chase" | "external" | "hold" | "observe";
 type Style = "learn" | "day" | "swing" | "long";
@@ -373,6 +374,10 @@ export default function Home() {
   const [transitioning, setTransitioning] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [birthdate, setBirthdate] = useState("");
+  const [email, setEmail] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [dossierState, setDossierState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [dossierError, setDossierError] = useState("");
   const question =
     stage === "self" ? selfQuestions[selfIndex] : styleQuestions[styleIndex];
   const position = stage === "self" ? selfIndex + 1 : 11 + styleIndex;
@@ -418,6 +423,26 @@ export default function Home() {
           (a, b) => score[b] - score[a],
         )[0] ?? "learn");
   }, [styleAnswers]);
+  const detailedDossier = useMemo(() => {
+    if (!solarLifeNumber || !lunarLifeNumber) return null;
+    const solarProfile = lifeProfiles[solarLifeNumber.base];
+    const lunarProfile = lifeProfiles[lunarLifeNumber.base];
+    if (!solarProfile || !lunarProfile) return null;
+    return buildDecisionDossier({
+      pattern,
+      style,
+      solar: {
+        path: solarLifeNumber.label,
+        role: "想法與外在表現",
+        ...solarProfile,
+      },
+      lunar: {
+        path: lunarLifeNumber.label,
+        role: "行動與情緒反應",
+        ...lunarProfile,
+      },
+    });
+  }, [lunarLifeNumber, pattern, solarLifeNumber, style]);
   function choose(value: Pattern | Style) {
     if (transitioning) return;
     setTransitioning(true);
@@ -455,7 +480,41 @@ export default function Home() {
     setStyleAnswers({});
     setShowResult(false);
     setBirthdate("");
+    setEmail("");
+    setMarketingConsent(false);
+    setDossierState("idle");
+    setDossierError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  async function requestDossier(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!detailedDossier) return;
+    setDossierState("sending");
+    setDossierError("");
+    try {
+      const response = await fetch("/api/decision-dossiers", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email,
+          pattern,
+          style,
+          solarPath: solarLifeNumber?.label,
+          lunarPath: lunarLifeNumber?.label,
+          reportTitle: detailedDossier.title,
+          reportHtml: detailedDossier.html,
+          reportText: detailedDossier.text,
+          reportCharacterCount: detailedDossier.characterCount,
+          marketingConsent,
+        }),
+      });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(data.error ?? "目前無法建立報告申請，請稍後再試。");
+      setDossierState("sent");
+    } catch (error) {
+      setDossierState("error");
+      setDossierError(error instanceof Error ? error.message : "目前無法建立報告申請，請稍後再試。");
+    }
   }
   return (
     <main>
@@ -725,6 +784,80 @@ export default function Home() {
                         當外在想法和內在行動都被看見，你比較能分辨：此刻是自己的方向、當下的情緒，還是別人的節奏正在替你做決定。
                       </p>
                     </div>
+                  </div>
+                )}
+              </section>
+              <section className="dossier-invite" aria-labelledby="dossier-title">
+                <div className="dossier-intro">
+                  <span>免費深度解讀</span>
+                  <h3 id="dossier-title">你的決策底圖</h3>
+                  <p>
+                    不是一張結果卡，而是一份約 2,500 字的完整解讀。它會把你這次的決策慣性、目前操作條件，以及陽曆／陰曆生命數字放回同一張圖裡，讓你看見自己從想法走到行動時，最常在哪裡被推著走。
+                  </p>
+                </div>
+                {detailedDossier ? (
+                  <>
+                    <div className="dossier-points">
+                      <div>
+                        <b>01</b>
+                        <span>你的慣性力量與最容易被接管的時刻</span>
+                      </div>
+                      <div>
+                        <b>02</b>
+                        <span>目前操作節奏能承接什麼、先守住什麼</span>
+                      </div>
+                      <div>
+                        <b>03</b>
+                        <span>陽曆初始設定與陰曆行動情緒的雙軸提醒</span>
+                      </div>
+                      <div>
+                        <b>04</b>
+                        <span>一個能在七天內開始的決策小實驗</span>
+                      </div>
+                    </div>
+                    {dossierState === "sent" ? (
+                      <div className="dossier-success" role="status">
+                        <b>已建立你的免費報告申請。</b>
+                        <span>NAS 會依你留下的 Email 寄出「你的決策底圖」完整 HTML 解讀。</span>
+                      </div>
+                    ) : (
+                      <form className="dossier-form" onSubmit={requestDossier}>
+                        <label>
+                          <span>Email</span>
+                          <input
+                            type="email"
+                            required
+                            autoComplete="email"
+                            placeholder="name@example.com"
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                          />
+                        </label>
+                        <p className="dossier-promise">
+                          留下 Email，免費獲得約 {detailedDossier.characterCount.toLocaleString()} 字的「你的決策底圖」詳細分析。
+                        </p>
+                        <label className="consent-check">
+                          <input type="checkbox" required />
+                          <span>我同意 NAS 使用此 Email 寄送本次免費報告；原始生日不會被保存。</span>
+                        </label>
+                        <label className="consent-check consent-check-optional">
+                          <input
+                            type="checkbox"
+                            checked={marketingConsent}
+                            onChange={(event) => setMarketingConsent(event.target.checked)}
+                          />
+                          <span>我也願意收到 NAS 不定期的自我理解與決策主題內容。（選填）</span>
+                        </label>
+                        <button className="primary-button dossier-button" type="submit" disabled={dossierState === "sending"}>
+                          {dossierState === "sending" ? "正在建立報告申請" : "免費取得完整解讀"} <b>→</b>
+                        </button>
+                        {dossierState === "error" ? <p className="dossier-error" role="alert">{dossierError}</p> : null}
+                      </form>
+                    )}
+                  </>
+                ) : (
+                  <div className="dossier-unlock">
+                    請先輸入上方的陽曆生日，完成陽曆與陰曆雙軸換算後，才能生成包含你生命數字的完整解讀。生日只在此頁換算，不會隨 Email 一起保存。
                   </div>
                 )}
               </section>

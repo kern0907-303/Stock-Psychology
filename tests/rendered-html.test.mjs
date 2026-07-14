@@ -55,7 +55,26 @@ test("ships a NAS self-awareness questionnaire with a stock-rhythm conclusion", 
   assert.match(page, /padStart\(2, "0"\)/);
   assert.match(page, /陰曆生命數字/);
   assert.match(page, /行動與情緒反應/);
+  assert.match(page, /你的決策底圖/);
+  assert.match(page, /免費取得完整解讀/);
+  assert.match(page, /原始生日不會被保存/);
   assert.match(page, /不是個別投資建議/);
   assert.match(layout, /metadataBase/);
   assert.match(layout, /og-v2\.png/);
+});
+
+test("stores only calculated life-number paths in the dossier schema", async () => {
+  const [schema, route, dossier] = await Promise.all([
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/decision-dossiers/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/decision-dossier.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(schema, /solarPath/);
+  assert.match(schema, /lunarPath/);
+  assert.doesNotMatch(schema, /birthdate/);
+  assert.match(route, /reportConsentAt/);
+  assert.match(route, /marketingConsent/);
+  assert.match(dossier, /生命數字是初始設定，不是命定結論/);
+  assert.match(dossier, /你的決策底圖/);
 });
