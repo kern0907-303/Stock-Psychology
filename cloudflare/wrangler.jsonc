@@ -1,0 +1,19 @@
+{
+  "name": "nas-decision-map",
+  "main": "../dist/server/index.js",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../dist/client"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nas-decision-map",
+      "database_id": "f0a48c94-41b1-4a53-9620-ce53c042d250"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
